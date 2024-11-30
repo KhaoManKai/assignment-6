@@ -11,13 +11,17 @@
  * Domains: https://web-assignment5-six.vercel.app
  ********************************************************************************/
 
+const mongoose = require('mongoose');
 const authData = require("./modules/auth-service");
 const clientSessions = require("client-sessions");
 const projectData = require("./modules/projects");
 
 const express = require('express');
 const app = express();
-
+mongoose.connect(process.env.MONGODB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).catch(err => console.error('MongoDB connection error:', err));
 const HTTP_PORT = process.env.PORT || 8080;
 
 app.use(express.static(__dirname + '/public'));
@@ -176,17 +180,21 @@ app.use((req, res, next) => {
   res.status(404).render("404", {message: "I'm sorry, we're unable to find what you're looking for"});
 });
 
-projectData.initialize()
-  .then(authData.initialize)
-  .then(function(){
-    app.listen(HTTP_PORT, function(){
-      console.log(`app listening on: ${HTTP_PORT}`);
-    });
-  }).catch(function(err){
-    console.log(`unable to start server: ${err}`);
-  });
+
+  async function startServer() {
+    try {
+      await projectData.initialize();
+      console.log('Project data initialized');
+      
+      await authData.initialize();
+      console.log('Auth data initialized');
+      
+      app.listen(HTTP_PORT, () => {
+        console.log(`Server listening on port ${HTTP_PORT}`);
+      });
+    } catch (err) {
+      console.error('Failed to start server:', err);
+    }
+  }
   
-  mongoose.connect(process.env.MONGODB, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }).catch(err => console.error('MongoDB connection error:', err));
+  startServer();
