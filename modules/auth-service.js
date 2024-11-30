@@ -19,13 +19,18 @@ const userSchema = new mongoose.Schema({
 
 function initialize() {
   return new Promise(function (resolve, reject) {
-    let db = mongoose.createConnection(process.env.MONGODB);
+    let db = mongoose.createConnection(process.env.MONGODB, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
     
     db.on('error', (err) => {
+      console.error('MongoDB connection error:', err);
       reject(err);
     });
     
     db.once('open', () => {
+      console.log('MongoDB connected successfully');
       User = db.model("users", userSchema);
       resolve();
     });
