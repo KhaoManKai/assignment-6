@@ -15,14 +15,16 @@ const mongoose = require('mongoose');
 const authData = require("./modules/auth-service");
 const clientSessions = require("client-sessions");
 const projectData = require("./modules/projects");
-
 const express = require('express');
 const app = express();
+
+const HTTP_PORT = process.env.PORT || 8080;
+
 mongoose.connect(process.env.MONGODB, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).catch(err => console.error('MongoDB connection error:', err));
-const HTTP_PORT = process.env.PORT || 8080;
+
 
 app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({ extended: true }));
@@ -179,22 +181,28 @@ app.get("/userHistory", ensureLogin, (req, res) => {
 app.use((req, res, next) => {
   res.status(404).render("404", {message: "I'm sorry, we're unable to find what you're looking for"});
 });
-
-
-  async function startServer() {
-    try {
-      await projectData.initialize();
-      console.log('Project data initialized');
-      
-      await authData.initialize();
-      console.log('Auth data initialized');
-      
-      app.listen(HTTP_PORT, () => {
-        console.log(`Server listening on port ${HTTP_PORT}`);
-      });
-    } catch (err) {
-      console.error('Failed to start server:', err);
-    }
+async function initialize() {
+  try {
+    await projectData.initialize();
+    console.log('Project data initialized');
+    await authData.initialize();
+    console.log('Auth data initialized');
+  } catch (err) {
+    console.error('Failed to initialize:', err);
+    throw err;
   }
+}
   
-  startServer();
+if (require.main === module) {
+  initialize().then(() => {
+    app.listen(HTTP_PORT, () => {
+      console.log(`Server listening on port ${HTTP_PORT}`);
+    });
+  }).catch((err) => {
+    console.error('Failed to start server:', err);
+  });
+}
+module.exports = {
+  app,
+  initialize
+};
