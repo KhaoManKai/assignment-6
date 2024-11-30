@@ -6,7 +6,7 @@
  *
  * https://www.senecapolytechnic.ca/about/policies/academic-integrity-policy.html
  *
- * Name: _______Hin Lum Lee__________ Student ID: ___132957234______ Date: ___16-Nov-2024_______
+ * Name: _______Hin Lum Lee__________ Student ID: ___132957234______ Date: ___30-Nov-2024_______
  *
  * Domains: https://web-assignment5-six.vercel.app
  ********************************************************************************/
@@ -185,3 +185,8 @@ projectData.initialize()
   }).catch(function(err){
     console.log(`unable to start server: ${err}`);
   });
+  
+  mongoose.connect(process.env.MONGODB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }).catch(err => console.error('MongoDB connection error:', err));
